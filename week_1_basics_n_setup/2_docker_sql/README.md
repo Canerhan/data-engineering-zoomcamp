@@ -174,7 +174,7 @@ python ingest_data.py \
   --port=5432 \
   --db=ny_taxi \
   --table_name=yellow_taxi_trips \
-  --url=${URL}
+  # --url=${URL}
 ```
 
 Build the image
