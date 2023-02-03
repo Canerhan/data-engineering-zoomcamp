@@ -8,8 +8,9 @@ from time import time
 
 import pandas as pd
 from sqlalchemy import create_engine
+from prefect import flow, task
 
-
+@task(log_prints=True, retries=3)
 def main(params):
     user = params.user
     password = params.password
@@ -42,27 +43,8 @@ def main(params):
     df.to_sql(name=table_name, con=engine, if_exists='append')
 
 
-    while True: 
-
-        try:
-            t_start = time()
-            
-            df = next(df_iter)
-
-            df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-            df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
-
-            df.to_sql(name=table_name, con=engine, if_exists='append')
-
-            t_end = time()
-
-            print('inserted another chunk, took %.3f second' % (t_end - t_start))
-
-        except StopIteration:
-            print("Finished ingesting data into the postgres database")
-            break
-
-if __name__ == '__main__':
+@flow(name="Ingest Flow")
+def main_flow():
     parser = argparse.ArgumentParser(description='Ingest CSV data to Postgres')
 
     parser.add_argument('--user', required=True, help='user name for postgres')
@@ -75,8 +57,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    main(args)
+if __name__ == '__main__':
+    main_flow()
 
 
 ## Execute command 
 #  python .\ingest_data.py --user root --password root --host localhost --port 5432 --db ny_taxi --table_name taxi_zone_lookup
+
