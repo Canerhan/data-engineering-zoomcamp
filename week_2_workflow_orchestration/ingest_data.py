@@ -5,10 +5,38 @@ import os
 import argparse
 
 from time import time
-
+from datetime import timedelta
 import pandas as pd
 from sqlalchemy import create_engine
 from prefect import flow, task
+from prefect.task import task_import_hash
+
+@task(log_prints=True, retries=3, cash_key_fn=task_input_hash, cache_expriation=timedelta(days=1))
+def extract_data (url):
+
+    # the backup files are gzipped, and it's important to keep the correct extension
+    # for pandas to be able to open the file
+    if url.endswith('.csv.gz'):
+        csv_name = 'output.csv.gz'
+    else:
+        csv_name = 'output.csv'
+
+    os.system(f"wget {url} -O {csv_name}")
+
+
+    df_iter = pd.read_csv(csv_name, iterator=True, chunksize=100000)
+
+    df = next(df_iter)
+
+    df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+    df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+
+    return df
+
+
+@task(log_prints=True)
+def transform_data(df):
+    print(f"pre: missing passenger count: {df['passenger_count'].isin([0]).sum()} ")
 
 @task(log_prints=True, retries=3)
 def main(params):
@@ -20,23 +48,7 @@ def main(params):
     table_name = params.table_name
     url = params.url
     
-    # the backup files are gzipped, and it's important to keep the correct extension
-    # for pandas to be able to open the file
-    if url.endswith('.csv.gz'):
-        csv_name = 'output.csv.gz'
-    else:
-        csv_name = 'output.csv'
-
-    os.system(f"wget {url} -O {csv_name}")
-
     engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
-
-    df_iter = pd.read_csv(csv_name, iterator=True, chunksize=100000)
-
-    df = next(df_iter)
-
-    df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-    df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
 
     df.head(n=0).to_sql(name=table_name, con=engine, if_exists='replace')
 
@@ -45,6 +57,7 @@ def main(params):
 
 @flow(name="Ingest Flow")
 def main_flow():
+
     parser = argparse.ArgumentParser(description='Ingest CSV data to Postgres')
 
     parser.add_argument('--user', required=True, help='user name for postgres')
@@ -56,10 +69,12 @@ def main_flow():
     parser.add_argument('--url', required=True, help='url of the csv file')
 
     args = parser.parse_args()
+    raw_data = extract_data(url)
+    main(args)
+
 
 if __name__ == '__main__':
     main_flow()
-
 
 ## Execute command 
 #  python .\ingest_data.py --user root --password root --host localhost --port 5432 --db ny_taxi --table_name taxi_zone_lookup
