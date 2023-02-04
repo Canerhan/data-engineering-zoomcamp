@@ -9,10 +9,14 @@ from datetime import timedelta
 import pandas as pd
 from sqlalchemy import create_engine
 from prefect import flow, task
-from prefect.task import task_import_hash
+from prefect.tasks import task_input_hash
+from prefect_sqlalchemy import SqlAlchemyConnector
 
-@task(log_prints=True, retries=3, cash_key_fn=task_input_hash, cache_expriation=timedelta(days=1))
-def extract_data (url):
+
+
+@task(log_prints=True, tags=["extract"], cache_key_fn=task_input_hash, cache_expiration=timedelta(days=1))
+def extract_data (url: str):
+
 
     # the backup files are gzipped, and it's important to keep the correct extension
     # for pandas to be able to open the file
@@ -36,46 +40,46 @@ def extract_data (url):
 
 @task(log_prints=True)
 def transform_data(df):
-    print(f"pre: missing passenger count: {df['passenger_count'].isin([0]).sum()} ")
+    print(f"pre: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
+    df = df[df['passenger_count'] != 0]
+    print(f"post: missing passenger count: {df['passenger_count'].isin([0]).sum()}")
+    return df
 
+# we are using the connection block from prefect ui
+# the connection is based on sqlalchemy
 @task(log_prints=True, retries=3)
-def main(params):
-    user = params.user
-    password = params.password
-    host = params.host 
-    port = params.port 
-    db = params.db
-    table_name = params.table_name
-    url = params.url
-    
-    engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
+def main(table_name, url,  data):
 
-    df.head(n=0).to_sql(name=table_name, con=engine, if_exists='replace')
+    connection_block = SqlAlchemyConnector.load("postgres-block")
+    with connection_block.get_connection(begin=False) as engine:
+        data.head(n=0).to_sql(name=table_name, con=engine, if_exists='replace')
+        data.to_sql(name=table_name, con=engine, if_exists='append')
 
-    df.to_sql(name=table_name, con=engine, if_exists='append')
+
+@flow(name="Subflow", log_prints=True)
+def log_subflow(table_name: str):
+    print(f"logging Subflow for: {table_name}")
 
 
 @flow(name="Ingest Flow")
 def main_flow():
 
     parser = argparse.ArgumentParser(description='Ingest CSV data to Postgres')
-
-    parser.add_argument('--user', required=True, help='user name for postgres')
-    parser.add_argument('--password', required=True, help='password for postgres')
-    parser.add_argument('--host', required=True, help='host for postgres')
-    parser.add_argument('--port', required=True, help='port for postgres')
-    parser.add_argument('--db', required=True, help='database name for postgres')
     parser.add_argument('--table_name', required=True, help='name of the table where we will write the results to')
     parser.add_argument('--url', required=True, help='url of the csv file')
 
     args = parser.parse_args()
+
+    table_name = args.table_name
+    url = args.url
+
+    log_subflow(table_name)
     raw_data = extract_data(url)
-    main(args)
+    data = transform_data(raw_data)
+    main(table_name, url,  data)
 
 
 if __name__ == '__main__':
     main_flow()
 
-## Execute command 
-#  python .\ingest_data.py --user root --password root --host localhost --port 5432 --db ny_taxi --table_name taxi_zone_lookup
 
