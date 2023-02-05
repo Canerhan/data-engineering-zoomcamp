@@ -6,12 +6,23 @@ description: null
 version: f1c11a746ae25388d3649ad39725e2fd
 # The work queue that will handle this deployment's runs
 work_queue_name: default
-work_pool_name: null
+work_pool_name: default-agent-pool
 tags: []
-parameters: {"color": "yellow", "months" :[2, 3], "year": 2019}
+parameters:
+  color: yellow
+  months:
+  - 2
+  - 3
+  year: 2019
 schedule: null
-is_schedule_active: null
+is_schedule_active: true
 infra_overrides: {}
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: etl-parent-main-flow
+manifest_path: null
 infrastructure:
   type: process
   env: {}
@@ -20,17 +31,14 @@ infrastructure:
   command: null
   stream_output: true
   working_dir: null
+  _block_document_id: 131bce68-bc5c-42a8-b06b-c65fc90bb3bd
+  _block_document_name: anonymous-adde6eeb-593e-4927-a0c4-ed8d4725d932
+  _is_anonymous: true
   block_type_slug: process
   _block_type_slug: process
-
-###
-### DO NOT EDIT BELOW THIS LINE
-###
-flow_name: etl-parent-main-flow
-manifest_path: null
 storage: null
 path: /home/linux_dev_env/data-engineering-zoomcamp/week_2_workflow_orchestration/my_notes
-entrypoint: parameterized_flow_web_to_gcs_homework.py:etl_parent_main_flow
+entrypoint: parameterized_flow_web_to_gcs_homework_question3.py:etl_parent_main_flow
 parameter_openapi_schema:
   title: Parameters
   type: object
@@ -56,4 +64,4 @@ parameter_openapi_schema:
       type: string
   required: null
   definitions: null
-timestamp: '2023-02-05T14:08:14.119880+00:00'
+timestamp: '2023-02-05T14:44:15.885634+00:00'

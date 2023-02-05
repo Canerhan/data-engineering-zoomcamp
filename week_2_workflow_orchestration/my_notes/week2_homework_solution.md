@@ -111,21 +111,22 @@ To create a deployment, we execute:
 prefect deployment build ./parameterized_flow_web_to_gcs_homework.py:etl_parent_main_flow -n "Parameterized EL_gcs_to_bq"
 ~~~
 
-The name of the python file is `parameterized_flow_web_to_gcs_homework.py`,   
+The name of the python file is `parameterized_flow_web_to_gcs_homework_question3.py`,   
 the name of the parent flow is `etl_parent_main_flow`,  
 and the name of the deployment will be 
 
 The result of the execution is:  
 ~~~bash
-linux_dev_env@linuxdevenv:~/data-engineering-zoomcamp/week_2_workflow_orchestration/my_notes$ 
-prefect deployment build ./parameterized_flow_web_to_gcs_homework.py:etl_parent_flow -n "Parameterized EL_gcs_to_bq"
-Found flow 'etl-parent-flow'
-Default '.prefectignore' file written to /home/linux_dev_env/data-engineering-zoomcamp/week_2_workflow_orchestration/my_notes/.prefectignore
-Deployment YAML created at '/home/linux_dev_env/data-engineering-zoomcamp/week_2_workflow_orchestration/my_notes/etl_parent_main_flow-deployment.yaml'.
-Deployment storage None does not have upload capabilities; no files uploaded.  Pass --skip-upload to suppress this warning.
+prefect deployment build ./parameterized_flow_web_to_gcs_homework_question3.py:etl_parent_main_flow -n "Parameterized EL_gcs_to_bq"
+Found flow 'etl-parent-main-flow'
+Deployment YAML created at 
+'/home/linux_dev_env/data-engineering-zoomcamp/week_2_workflow_orchestration/my_notes/etl_parent_main_f
+low-deployment.yaml'.
+Deployment storage None does not have upload capabilities; no files uploaded.  Pass --skip-upload to 
+suppress this warning.
 ~~~
 
-Now we can edit the `prefect deployment apply etl_parent_main_flow-deployment.yaml.yaml` Yaml file.  
+Now we can edit the `prefect deployment apply etl_parent_main_flow-deployment.yaml` Yaml file.  
 We replace `parameters: {}` with `parameters: { "color": "yellow", "months" :[2, 3], "year": 2019}`
 Now we can apply the new deployment with `prefect deployment apply etl_parent_main_flow-deployment.yaml`
 
