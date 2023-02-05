@@ -22,37 +22,45 @@ def extract_from_gcs(color: str, year: int, month: int) -> Path:
 
 @task()
 def transform(path: Path) -> pd.DataFrame:
-    """Data cleaning example, replace na with zeros"""
+    """Creating a Dataframe"""
     df = pd.read_parquet(path)
-    print(f"pre: missing passenger count: {df['passenger_count'].isna().sum()}")
-    df['passenger_count'].fillna(0, inplace=True)
-    print(f"post: missing passenger count: {df['passenger_count'].isna().sum()}")
     return df
 
 
 @task()
-def write_bq(df: pd.DataFrame) -> None:
+def write_bq(df: pd.DataFrame, color: str, year: int, month: int) -> None:
     """Write DataFrame to BigQuery"""
     gcp_credentials_block = GcpCredentials.load("gcp-block")
     df.to_gbq(
-        destination_table="trips_data_all.rides", # Dataset.TableName
+        destination_table=f"trips_data_all.{color}_tripdata_{year}-{month:02}", # Dataset.TableName
         project_id="dtc-de-course-2023",
         credentials=gcp_credentials_block.get_credentials_from_service_account(),
         chunksize=500.000,
-        if_exists="append",
+        if_exists="replace",
     )
 
 @flow()
-def etl_gcs_to_bq():
+def etl_gcs_to_bq(year: int, month: int, color: str) -> None:
     """Main ETL flow to load data into Big Query"""
-    color="yellow"
-    year=2021
-    month=1
+
 
     path = extract_from_gcs(color, year, month) 
     df = transform(path)
-    write_bq(df)
+    write_bq(df, color, year, month)
+    print(len(df))
 
+
+@flow()
+def etl_parent_flow(
+    months: list[int] = [1, 2], year: int = 2019, color: str = "yellow"
+):
+    for month in months:
+        etl_gcs_to_bq(year, month, color)
 
 if __name__=="__main__":
-    etl_gcs_to_bq()
+    
+    color="yellow"
+    year=2019
+    months=[2,3]
+    
+    etl_parent_flow(months, year, color)
