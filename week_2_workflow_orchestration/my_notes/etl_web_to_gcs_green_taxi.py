@@ -34,19 +34,18 @@ def clean(df = pd.DataFrame) -> pd.DataFrame:
 @task()
 def write_local(df: pd.DataFrame, color: str, dataset_file: str) -> Path:
     """Write DataFrame out locally as parquet file"""
-    path = Path(f"/home/linux_dev_env/data-engineering-zoomcamp/week_2_workflow_orchestration/data/{color}/{dataset_file}.parquet")
-    gcp_path = Path(f"./data/{color}/{dataset_file}")
+    path = Path(f"./data/{color}/{dataset_file}.parquet")
     df.to_parquet(path, compression="gzip")
-    return path, gcp_path
+    return path
 
 
 @task()
-def write_gcs(path: Path, gcp_path: Path) -> None:
+def write_gcs(path: Path) -> None:
     """Upload local parquet FIle """
     gcp_cloud_storage_bucket_block = GcsBucket.load("gcs-bucket")
     gcp_cloud_storage_bucket_block.upload_from_path(
         from_path = f"{path}",
-        to_path=f"{gcp_path}"
+        to_path=f"{path}"
     )
     return
 
@@ -56,7 +55,7 @@ def etl_web_to_gcs() -> None:
     """The Main ETL function """
     color="yellow"
     year=2019
-    month=[2,3]
+    month=2
 
     # url of the datasets github.com/DataTalksClub/nyc-tlc-data/releases/tag/yellow
 
@@ -65,8 +64,8 @@ def etl_web_to_gcs() -> None:
 
     df = fetch(dataset_url)
     df_clean = clean(df)
-    path, gcp_path = write_local(df_clean, color, dataset_file)
-    write_gcs(path, gcp_path)
+    path = write_local(df_clean, color, dataset_file)
+    write_gcs(path)
 
 if __name__ == '__main__':
     etl_web_to_gcs()
