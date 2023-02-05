@@ -15,7 +15,7 @@ How many rows does that dataset have?
 * 822,132
 
 
-### Solution
+### Solution Question 1
 
 We take the etl_web_to_gcs Python file, and edit the 3 parameters:   
 ~~~py
@@ -50,6 +50,8 @@ Using the flow in `etl_web_to_gcs.py`, create a deployment to run on the first o
 - `5 * 1 0 *`
 - `* * 5 1 0`
 
+### Solution Question 2
+
 The first parmeter is the minute (=0), the second the hour (=5),  
 and the third is the day of the month (=1).
 
@@ -80,6 +82,61 @@ Make sure you have the parquet data files for Yellow taxi data for Feb. 2019 and
 - 11,338,483
 
 
+### Solution Question 3
+
+The parameterized Python file is [here](data-engineering-zoomcamp/week_2_workflow_orchestration/my_notes/parameterized_flow_web_to_gcs_homework.py)
+
+The "etl_web_to_gcs" function is part of the parent flow.  
+With this part of the funtion it can take multiple parameters:  
+
+~~~python
+@flow()
+def etl_parent_main_flow(
+    months: list[int] = [1, 2], year: int = 2019, color: str = "yellow"
+):
+    for month in months:
+        etl_web_to_gcs(year, month, color)
+
+
+if __name__ == "__main__":
+    color = "yellow"
+    months = [2, 3]
+    year = 2019
+    etl_parent_main_flow(months, year, color)
+~~~
+
+To create a deployment, we execute:
+
+~~~shell
+prefect deployment build ./parameterized_flow_web_to_gcs_homework.py:etl_parent_main_flow -n "Parameterized EL_gcs_to_bq"
+~~~
+
+The name of the python file is `parameterized_flow_web_to_gcs_homework.py`,   
+the name of the parent flow is `etl_parent_main_flow`,  
+and the name of the deployment will be 
+
+The result of the execution is:  
+~~~bash
+linux_dev_env@linuxdevenv:~/data-engineering-zoomcamp/week_2_workflow_orchestration/my_notes$ 
+prefect deployment build ./parameterized_flow_web_to_gcs_homework.py:etl_parent_flow -n "Parameterized EL_gcs_to_bq"
+Found flow 'etl-parent-flow'
+Default '.prefectignore' file written to /home/linux_dev_env/data-engineering-zoomcamp/week_2_workflow_orchestration/my_notes/.prefectignore
+Deployment YAML created at '/home/linux_dev_env/data-engineering-zoomcamp/week_2_workflow_orchestration/my_notes/etl_parent_main_flow-deployment.yaml'.
+Deployment storage None does not have upload capabilities; no files uploaded.  Pass --skip-upload to suppress this warning.
+~~~
+
+Now we can edit the `prefect deployment apply etl_parent_main_flow-deployment.yaml.yaml` Yaml file.  
+We replace `parameters: {}` with `parameters: { "color": "yellow", "months" :[2, 3], "year": 2019}`
+Now we can apply the new deployment with `prefect deployment apply etl_parent_main_flow-deployment.yaml`
+
+For a deployment to be execcutabel,   
+we havbe to start the prefect agent within a termminal:  
+`prefect agent start -q 'default'`
+
+The yellow_tripdata_2019-02 table has 7.019.375 rows,  
+yellow_tripdata_2019-03 has 7.832.545 rows.
+So **14,851,920** is the correct answer.
+---
 
 ## Question 4. Github Storage Block
 
