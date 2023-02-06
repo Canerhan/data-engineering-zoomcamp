@@ -154,7 +154,11 @@ How many rows were processed by the script?
 - 88,605
 - 190,225
 
-
+### Solution Question 4
+We need to create a Github Personal Access Token,  
+in Setting and than choose Developer Setting at the end.  
+You can find then Pyhton file [here.](week_2_workflow_orchestration/my_notes/etl_web_to_gcs_green_taxi_homework_question4.py)
+The number of rows are  **88.605**.
 
 ## Question 5. Email or Slack notifications
 
@@ -185,6 +189,9 @@ How many rows were processed by the script?
 - `514,392`
 
 
+### Solution Question 5
+The number of rows: **514.392**
+
 ## Question 6. Secrets
 
 Prefect Secret blocks provide secure, encrypted storage in the database and obfuscation in the UI. Create a secret block in the UI that stores a fake 10-digit password to connect to a third-party service. Once you’ve created your block in the UI, how many characters are shown as asterisks (*) on the next page of the UI?
@@ -194,6 +201,9 @@ Prefect Secret blocks provide secure, encrypted storage in the database and obfu
 - 8
 - 10
 
+### Solution Question 6
+
+The secret has **8** digits.  
 
 ## Submitting the solutions
 
