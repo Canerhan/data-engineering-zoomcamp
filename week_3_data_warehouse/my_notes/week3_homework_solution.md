@@ -16,10 +16,11 @@ What is the count for fhv vehicle records for year 2019?
 - 22,978,333
 - 13,942,414
 
-**### Solution Question 1**
+### Solution Question 1
 
-43.244.696
+SELECT COUNT (*) FROM `dtc-de-course-2023.trips_data_all.fhv_2019`
 
+**43.244.696**
 ## Question 2:
 Write a query to count the distinct number of affiliated_base_number for the entire dataset on both the tables.</br> 
 What is the estimated amount of data that will be read when this query is executed on the External Table and the Table?
@@ -29,6 +30,9 @@ What is the estimated amount of data that will be read when this query is execut
 - 0 MB for the External Table and 0MB for the BQ Table
 - 0 MB for the External Table and 317.94MB for the BQ Table 
 
+
+### Solution Question 2
+- 0 MB for the External Table and 317.94MB for the BQ Table 
 
 ## Question 3:
 How many records have both a blank (null) PUlocationID and DOlocationID in the entire dataset?
@@ -50,6 +54,14 @@ What is the best strategy to optimize the table if query always filter by pickup
 - Partition by pickup_datetime Partition by affiliated_base_number
 - Partition by affiliated_base_number Cluster on pickup_datetime
 
+### Solution Question 4
+
+Partition helps at query performance.  
+With that the DB Engine can better the data.  
+
+Clustering helps when you order data.   
+
+**Partition by pickup_datetime Cluster on affiliated_base_number**
 ## Question 5:
 Implement the optimized solution you chose for question 4. Write a query to retrieve the distinct affiliated_base_number between pickup_datetime 03/01/2019 and 03/31/2019 (inclusive).</br> 
 Use the BQ table you created earlier in your from clause and note the estimated bytes. Now change the table in the from clause to the partitioned table you created for question 4 and note the estimated bytes processed. What are these values? Choose the answer which most closely matches.
@@ -59,6 +71,29 @@ Use the BQ table you created earlier in your from clause and note the estimated 
 - 646.25 MB for non-partitioned table and 646.25 MB for the partitioned table
 
 
+### Solution Question 5
+
+~~~sql
+SELECT COUNT (DISTINCT Affiliated_base_number) FROM `dtc-de-course-2023.trips_data_all.fhv_2019_native`
+WHERE CAST(pickup_datetime AS DATE) BETWEEN '2019-03-01' and '2019-03-31'
+~~~
+647,87 MB for non-partitioned table
+
+Next we create the partitioned table
+~~~sql
+CREATE OR REPLACE TABLE `dtc-de-course-2023.trips_data_all.fhv_2019_native_partitioned`
+PARTITION BY DATE(pickup_datetime) 
+AS 
+SELECT * FROM `dtc-de-course-2023.trips_data_all.fhv_2019_native`
+~~~
+
+~~~sql
+SELECT COUNT (DISTINCT Affiliated_base_number) FROM `dtc-de-course-2023.trips_data_all.fhv_2019_native_partitioned`
+WHERE CAST(pickup_datetime AS DATE) BETWEEN '2019-03-01' and '2019-03-31'
+~~~
+
+23,05 MB for the partitioned table
+
 ## Question 6: 
 Where is the data stored in the External Table you created?
 
@@ -67,12 +102,15 @@ Where is the data stored in the External Table you created?
 - Container Registry
 - Big Table
 
+### Solution Question 6
+GCP Bucket
 
 ## Question 7:
 It is best practice in Big Query to always cluster your data:
 - True
 - False
 
+### Solution Question 7
 
 ## (Not required) Question 8:
 A better format to store these files may be parquet. Create a data pipeline to download the gzip files and convert them into parquet. Upload the files to your GCP Bucket and create an External and BQ Table. 
