@@ -16,6 +16,10 @@ What is the count for fhv vehicle records for year 2019?
 - 22,978,333
 - 13,942,414
 
+**### Solution Question 1**
+
+43.244.696
+
 ## Question 2:
 Write a query to count the distinct number of affiliated_base_number for the entire dataset on both the tables.</br> 
 What is the estimated amount of data that will be read when this query is executed on the External Table and the Table?
@@ -32,6 +36,12 @@ How many records have both a blank (null) PUlocationID and DOlocationID in the e
 - 1,215,687
 - 5
 - 20,332
+
+
+### Solution Question 3
+
+**717.748**
+
 
 ## Question 4:
 What is the best strategy to optimize the table if query always filter by pickup_datetime and order by affiliated_base_number?
