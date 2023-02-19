@@ -90,11 +90,24 @@ yellow_perc 0,9
 Create a staging model for the fhv data for 2019 and do not add a deduplication step. Run it via the CLI without limits (is_test_run: false).
 Filter records with pickup time in year 2019.
 
-- 4208599
-- 44384899
-- 57084899
-- 42084899
+- 33.244.696
+- 43.244.696
+- 53.244.696
+- 63.244.696
 
+#### Question 3 Solution
+We create the staging model for fhv and with test disabled,  
+with this comman:  
+`  dbt run --m +stg_fhv_tripdata --var 'is_test_run: false'  `
+
+~~~sql
+SELECT 
+*
+FROM `dtc-de-course-2023`.trips_data_all.stg_fhv_tripdata
+WHERE EXTRACT(YEAR FROM pickup_datetime ) = 2019
+~~~
+
+**- 43.244.696**
 
 ### Question 4: 
 
@@ -104,10 +117,27 @@ Create a core model for the stg_fhv_tripdata joining with dim_zones.
 Similar to what we've done in fact_trips, keep only records with known pickup and dropoff locations entries for pickup and dropoff locations. 
 Run it via the CLI without limits (is_test_run: false) and filter records with pickup time in year 2019.
 
-- 22676490
-- 36678853
-- 22676253
-- 29565253
+- 12.998.722
+- 22.998.722
+- 32.998.722
+- 42.998.722
+
+
+#### Question 4 Solution
+
+[Here](data-engineering-zoomcamp/week_4_analytics_engineering/taxi_rides_ny/models/core/fact_fhv_trips.sql) is the model
+
+`  dbt run --m fact_fhv_trips --var 'is_test_run: false'  `
+
+~~~sql
+SELECT 
+COUNT(*)
+FROM `dtc-de-course-2023`.trips_data_all.fact_fhv_trips
+WHERE EXTRACT(YEAR FROM pickup_datetime) = 2019
+~~~
+
+**- 22.998.722**
+
 
 ### Question 5: 
 
@@ -120,13 +150,26 @@ Create a dashboard with some tiles that you find interesting to explore the data
 - December
 
 
+#### Question 5 Solution
+
+~~~sql
+SELECT DISTINCT 
+EXTRACT(MONTH FROM pickup_datetime) AS month_number,
+COUNT(*) OVER (PARTITION BY EXTRACT(MONTH FROM pickup_datetime)) AS row_numbers
+FROM `dtc-de-course-2023`.trips_data_all.fact_fhv_trips
+WHERE EXTRACT(YEAR FROM pickup_datetime) = 2019
+ORDER BY month_number ASC
+~~~
+
+
+![viz_q5](2023-02-19-11-42-57.png)
 
 ## Submitting the solutions
 
 * Form for submitting: https://forms.gle/6A94GPutZJTuT5Y16
 * You can submit your homework multiple times. In this case, only the last submission will be used. 
 
-Deadline: 21 February (Tuesday), 22:00 CET
+Deadline: 25 February (Saturday), 22:00 CET
 
 
 ## Solution
