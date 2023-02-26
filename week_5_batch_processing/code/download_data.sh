@@ -7,7 +7,7 @@ YEAR=$2 # 2020
 URL_PREFIX="https://s3.amazonaws.com/nyc-tlc/trip+data"
 
 for MONTH in {1..12}; do
-  FMONTH=`printf "%02d" ${MONTH}`
+  FMONTH=`printf "%02d" ${MONTH}` # Create monthnumber but  with elading  0 if 1 digi, 2d means 2 digits
 
   URL="${URL_PREFIX}/${TAXI_TYPE}_tripdata_${YEAR}-${FMONTH}.csv"
 
