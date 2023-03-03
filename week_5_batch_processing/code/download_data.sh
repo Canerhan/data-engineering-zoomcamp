@@ -1,8 +1,8 @@
 
 set -e
 
-TAXI_TYPE=$1 # "yellow"
-YEAR=$2 # 2020
+TAXI_TYPE="yellow" # "yellow"
+YEAR=2020 # 2020
 
 URL_PREFIX="https://github.com/DataTalksClub/nyc-tlc-data/releases/download"
 
