@@ -24,6 +24,8 @@ What's the output?
 
 #### Question 1 Solution
 
+'3.3.2'
+
 ### Question 2: 
 
 **HVFHW June 2021**
@@ -42,6 +44,7 @@ What is the average size of the Parquet (ending with .parquet extension) Files t
 
 #### Question 2 Solution
 
+It is 24 MB
 
 ### Question 3: 
 
@@ -59,6 +62,13 @@ Consider only trips that started on June 15.</br>
 
 #### Question 3 Solution
 
+~~~python
+df_fhvhv_pq.select(date_format(col("pickup_datetime"), "dd.MM.yyyy").alias("pickup_date")) \
+    .filter('pickup_date == "15.06.2021"').count()
+~~~
+
+
+**452.470**
 
 
 ### Question 4: 
@@ -77,6 +87,19 @@ How long was the longest trip in Hours?</br>
 
 #### Question 4 Solution
 
+~~~sql
+df_fhvhv_pq.registerTempTable('fhvhv_data')
+
+
+spark.sql("""
+SELECT
+(bigint(dropoff_datetime) - bigint(pickup_datetime)) /3600 as test
+FROM fhvhv_data
+ORDER BY (bigint(dropoff_datetime) - bigint(pickup_datetime)) DESC
+LIMIT 1
+"""
+).show()
+~~~
 
 ### Question 5: 
 
@@ -93,6 +116,7 @@ How long was the longest trip in Hours?</br>
 
 #### Question 5 Solution
 
+You can access the Spark UI on the default Port 4040
 
 ### Question 6: 
 
@@ -111,6 +135,30 @@ Using the zone lookup data and the fhvhv June 2021 data, what is the name of the
 
 #### Question 6 Solution
 
+~~~shell
+!wget -nc https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv
+~~~
+
+~~~spark
+taxi_zones = spark.read \
+            .option("Header", "True") \
+            .csv('taxi_zone_lookup.csv')
+~~~
+
+~~~sql
+taxi_zones.createTempView('taxi_zones_view')
+
+
+spark.sql("""
+SELECT 
+*
+FROM fhvhv_data
+LIMIT 1
+"""
+).show()
+~~~
+
+Crown Heights North with 231.279 Trips.
 
 
 ## Submitting the solutions
