@@ -87,6 +87,8 @@ How long was the longest trip in Hours?</br>
 
 #### Question 4 Solution
 
+**66.87**
+
 ~~~sql
 df_fhvhv_pq.registerTempTable('fhvhv_data')
 
