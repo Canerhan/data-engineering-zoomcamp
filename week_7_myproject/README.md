@@ -14,7 +14,7 @@ how you can reproduce this project on your environment.
 ## Prerequisites
 ---
 
-### Cloud
+### Cloud Account
 ---
  
 
@@ -58,7 +58,7 @@ save it to your home folder in  `$HOME/.google/`
 
 <br>
 
-### Local
+## Local Environment
 ---
 
 
@@ -130,10 +130,10 @@ terraform apply -var="project=dc-project-2023"
 
 
 ---
-### Cloud Environment
+## Cloud Environment
 ---
 
-We will execute everythin on the cloud environment.  
+We will execute everything on the cloud environment.  
 We have to prepare the VM. The best OS for this project is Linux.  
 
 
@@ -161,4 +161,62 @@ This things will be executed:
 
 If you finished all the points in the previous step,  
 the VM is ready to be used.  
-Now you have to clone this repository into your homefolder
+Now you have to clone this repository into your home folder.
+
+
+<br>
+
+## Project Execution
+
+### Data ingestion 
+
+#### Docker
+
+For Ddcker we need the host user id.  
+Otherwise the AIrflow fodlers will be created with the root user.  
+The result must be saved in a .env file.  
+
+~~~shell
+cd $HOME/data-engineering-zoomcamp/week_7_myproject 
+echo -e "AIRFLOW_UID=$(id -u)" >> .env
+echo AIRFLOW_PROJ_DIR="$HOME/data-engineering-zoomcamp/week_7_myproject/docker_data/airflow" >> .env
+~~~
+
+
+We start the docker compose application:  
+
+~~~docker
+cd $HOME/data-engineering-zoomcamp/week_7_myproject 
+
+docker compose up -d
+~~~
+
+The Airflow UI will be avaible on `<ip>:8080`.  
+Username / Password is `airflow`.  
+
+
+<br>
+
+#### Airflow
+
+
+
+In the Airflow UI select the "Admin" Tab and then "Connection". Klick on the blue plus button.  
+We have to create 4 connections:  
+<br>
+- Google Cloud
+
+   You can find the the documentation [here](https://airflow.apache.org/docs/apache-airflow-providers-google/stable/connections/gcp.html).  
+   The service-account credentials json file will be mounted in `/opt/airflow/keys/` through docker compose.  
+
+   ![image](./airflow_gcp.png)
+
+- Google Bucket
+  
+
+
+
+
+
+
+
