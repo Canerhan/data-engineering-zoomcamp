@@ -172,8 +172,11 @@ Now you have to clone this repository into your home folder.
 
 #### Docker
 
-For Ddcker we need the host user id.  
-Otherwise the AIrflow fodlers will be created with the root user.  
+For Docker we need the host user id.
+When we init docker compose,  
+it will create 3 folders for Airflow.
+If we dont do that, the folders will be created with the root user.  
+This would cause problems.    
 The result must be saved in a .env file.  
 
 ~~~shell
@@ -191,7 +194,7 @@ cd $HOME/data-engineering-zoomcamp/week_7_myproject
 docker compose up -d
 ~~~
 
-The Airflow UI will be avaible on `<ip>:8080`.  
+The Airflow UI will be avaible on `<ip of the machine>:8080`.  
 Username / Password is `airflow`.  
 
 
@@ -199,10 +202,7 @@ Username / Password is `airflow`.
 
 #### Airflow
 
-
-
 In the Airflow UI select the "Admin" Tab and then "Connection". Klick on the blue plus button.  
-We have to create 4 connections:  
 <br>
 - Google Cloud
 
