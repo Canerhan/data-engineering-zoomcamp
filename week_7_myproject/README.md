@@ -200,7 +200,34 @@ Username / Password is `airflow`.
 
 <br>
 
-#### Airflow
+#### Prefect
+
+Open a terminal and execute:  
+
+~~~shell
+prefect orion start
+~~~
+
+Open the Browser and go to [Prefect UI](http://127.0.0.1:4200/api)
+
+We need to authorize porefect with our GCP Account.  
+Herefor we will use the service account credentials.  
+Open the Json file Service account file in `$Home/.google/service_account_dc_project_2023.json`  
+and copy the content of the file.  
+
+Go in the Prefect UI to "Blocks" and create a new block,  
+![](images/prefect_block_ui.png)  
+and choose `GCP Credentials`.  
+Block Name: gcp-project-2023  
+Pase the Json Dictionary into the blue field,  
+and the Project Name is dc-project-2023.  
+![](images/prefect_gcp_cred.png)  
+
+We create another Block, this time "GCS Bucket".  
+At "Gcp Credentials" choose the one you created earlier.
+![](images/prefect_bucket_cred.png)
+
+
 
 In the Airflow UI select the "Admin" Tab and then "Connection". Klick on the blue plus button.  
 <br>
@@ -215,8 +242,17 @@ In the Airflow UI select the "Admin" Tab and then "Connection". Klick on the blu
   
 
 
+~~~shell
+prefect deployment build extract_load_transfortm_web_to_local_to_gcs_tobq.py:etl_parent_flow -n "Parameterized EL_web_to_local_to_gcs_to_bq"
 
+~~~
 
+A new YAMl file was created,  
+which ahs to be edited:  
+Replace `parameters: {}` with  
+`parameters: {"years": 2022, "months": [1,2,3,4,5,6,7,8,9,10,11,12]}`
+
+prefect deployment apply etl_parent_flow-deployment.yaml
 
 
 
