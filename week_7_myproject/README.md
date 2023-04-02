@@ -208,7 +208,7 @@ Open a terminal and execute:
 prefect orion start
 ~~~
 
-Open the Browser and go to [Prefect UI](http://127.0.0.1:4200/api)
+Open the Browser and go to [Prefect UI](http://127.0.0.1:4200)
 
 We need to authorize porefect with our GCP Account.  
 Herefor we will use the service account credentials.  
@@ -219,7 +219,7 @@ Go in the Prefect UI to "Blocks" and create a new block,
 ![](images/prefect_block_ui.png)  
 and choose `GCP Credentials`.  
 Block Name: gcp-project-2023  
-Pase the Json Dictionary into the blue field,  
+Paste the Json dictionary into the blue field,  
 and the Project Name is dc-project-2023.  
 ![](images/prefect_gcp_cred.png)  
 
@@ -228,18 +228,6 @@ At "Gcp Credentials" choose the one you created earlier.
 ![](images/prefect_bucket_cred.png)
 
 
-
-In the Airflow UI select the "Admin" Tab and then "Connection". Klick on the blue plus button.  
-<br>
-- Google Cloud
-
-   You can find the the documentation [here](https://airflow.apache.org/docs/apache-airflow-providers-google/stable/connections/gcp.html).  
-   The service-account credentials json file will be mounted in `/opt/airflow/keys/` through docker compose.  
-
-   ![image](./airflow_gcp.png)
-
-- Google Bucket
-  
 
 
 ~~~shell

@@ -37,7 +37,7 @@ def clean_local_data(df: pd.DataFrame) -> pd.DataFrame:
 
 # %%
 @task()
-def tarnsform_data(df: pd.DataFrame, year, month) -> pd.DataFrame:
+def transform_data(df: pd.DataFrame, year, month) -> pd.DataFrame:
     df["date_added"] = f"01.{month:02}.{year}"
     return df
 
@@ -78,7 +78,7 @@ def etl_web_to_local_to_gcs(year: int, month: int) -> None:
     extract_load_web_data(year, month, file_name)
     raw_df = load_csv_data(file_name)
     cleaned_df = clean_local_data(raw_df)
-    transformed_df = tarnsform_data (cleaned_df, year, month)
+    transformed_df = transform_data (cleaned_df, year, month)
     final_df = save_transformed_data (transformed_df, file_name)
     write_gcs(file_name, "Land_and_Property")
     write_bq(final_df)
