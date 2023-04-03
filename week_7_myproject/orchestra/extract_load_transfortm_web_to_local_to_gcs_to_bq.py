@@ -32,13 +32,13 @@ def clean_local_data(df: pd.DataFrame) -> pd.DataFrame:
     new_df = df[df["Account Customer"].str.contains("Total")==False]
     """ We are dropping the "Total" Column from the Dataframe """
     new_df = new_df.drop(["Total"], axis=1)
-    new_df = new_df.columns.str.replace("[()]", "_")
+    new_df.columns = new_df.columns.str.replace("[( )]", "_")
     return new_df
 
 # %%
 @task()
-def transform_data(df: pd.DataFrame, year, month) -> pd.DataFrame:
-    df["date_added"] = f"01.{month:02}.{year}"
+def transform_data(df: pd.DataFrame, year, month) -> None:
+    df["date_added"] = f"{year}-{month:02}-01"
     return df
 
 # %%
@@ -72,8 +72,14 @@ def write_bq(df: pd.DataFrame) -> None:
     )
 
 # %%
+@task()
+def delete_local_file(file_name) -> None:
+    os.remove(f"{file_name}.parquet")
+    os.remove(f"{file_name}.csv")
+
+# %%
 @flow()
-def etl_web_to_local_to_gcs(year: int, month: int) -> None:
+def etl_web_to_local_to_gcs_to_bq(year: int, month: int) -> None:
     file_name = f"Number-and-types-of-applications-by-all-account-customers-{year}-{month:02}"
     extract_load_web_data(year, month, file_name)
     raw_df = load_csv_data(file_name)
@@ -82,14 +88,14 @@ def etl_web_to_local_to_gcs(year: int, month: int) -> None:
     final_df = save_transformed_data (transformed_df, file_name)
     write_gcs(file_name, "Land_and_Property")
     write_bq(final_df)
-    
+    delete_local_file(file_name)
 
 # %%
 @flow()
 def etl_parent_flow(years:list[int] , months:list[int]) -> None:
     for year in years:
         for month in months:
-            etl_web_to_local_to_gcs(year, month)
+            etl_web_to_local_to_gcs_to_bq(year, month)
 
 # %% [markdown]
 # ## Execution
@@ -97,7 +103,7 @@ def etl_parent_flow(years:list[int] , months:list[int]) -> None:
 # %%
 if __name__ == '__main__':
     years=[2022]
-    months=[2,3]
+    months=[2,3,4]
     etl_parent_flow(years, months) 
 
 

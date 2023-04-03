@@ -202,7 +202,7 @@ Username / Password is `airflow`.
 
 #### Prefect
 
-Open a terminal and execute:  
+Open a new terminal and execute:  
 
 ~~~shell
 prefect orion start
@@ -229,18 +229,55 @@ At "Gcp Credentials" choose the one you created earlier.
 
 
 
+Now we can execute the Python ETL Script
+
+Execute the following in a shell:  
 
 ~~~shell
-prefect deployment build extract_load_transfortm_web_to_local_to_gcs_tobq.py:etl_parent_flow -n "Parameterized EL_web_to_local_to_gcs_to_bq"
-
+python3 $HOME/data-engineering-zoomcamp/week_7_myproject/orchestra/extract_load_transfortm_web_to_local_to_gcs_to_bq.py
 ~~~
 
-A new YAMl file was created,  
-which ahs to be edited:  
-Replace `parameters: {}` with  
-`parameters: {"years": 2022, "months": [1,2,3,4,5,6,7,8,9,10,11,12]}`
 
-prefect deployment apply etl_parent_flow-deployment.yaml
+The Script downloads the csv Files form the UK Government Site,  
+transform them and uploads them to Google Cloud Bucket and Big Query.  
+
+When you jump back to the Prefect UI,  
+and choose "etl-web-to-local-to-gcs-to-bq" in the "FLows" Tab,  
+you can see all runs for this Script and detailed Logs.  
+
+![](images/prefect_flows.png)
+
+![](images/prefect_flows_detailed.png)
 
 
 
+
+### Data Warehouse
+
+Teh data we want to analyze is now on Big Query.      
+As you can see in the details of the table,    
+it is not optimized, no Partition, no Cluster.  
+
+We will order the data by date column "date_added",  
+so we will Cluster based on this column.  
+We will group the data by the Customer,  
+so we will Partitio by "Account_Customer".   
+
+
+Execute ths SQL Script to create the new table "land_and_property_optimized".  
+
+~~~sql
+CREATE TEMP TABLE temp_table AS
+SELECT *,
+  SAFE.PARSE_DATE('%Y-%m-%d', date_added) AS date_added_parsed
+FROM `dc-project-2023.project_dwh.land_and_property`;
+
+CREATE OR REPLACE TABLE `dc-project-2023.project_dwh.land_and_property_optimized`
+PARTITION BY date_added_parsed
+CLUSTER BY Account_Customer 
+AS SELECT * FROM temp_table;
+~~~
+
+Now we see in the details, that the table is partitioned and clustered.  
+
+![](images/big_query_table_optimized.png)
