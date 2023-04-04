@@ -63,7 +63,7 @@ and select "New Project" on the top right.
 <br>
 
 ### APIs  
-Enabe the following APIs. The Project-Name on the top left must be "DC-Project-2023".   
+Enable the following APIs. The Project-Name on the top left must be "DC-Project-2023".   
 * https://console.cloud.google.com/apis/library/iam.googleapis.com
 * https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
 
@@ -287,7 +287,7 @@ Now we see in the details, that the table is partitioned and clustered.
 The data we want to analyze is ready and optimized in Big Query.  
 We will now use dbt locally and do some transformations within the Data Warehouse.  
 
-The dbt folder is in `_3_Transformation/dc_project_2023`.
+The dbt folder is in `./week_7_myproject/_3_Transformation/dc_project_2023`.
 
 To create a connection and authorization,  
 we have to create a dbt profile file in `$HOME/.dbt/profiles.yml`  
