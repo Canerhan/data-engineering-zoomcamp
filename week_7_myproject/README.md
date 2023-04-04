@@ -12,14 +12,11 @@ Table of Contents
 - [Local Environment](#local-environment)
     - [Credentials Env Var](#credentials-env-var)
     - [Terraform](#terraform)
-    - [GCloud SDK](#gcloud-sdk)
-    - [Create GCP Infrastructure](#create-gcp-infrastructure)
 - [Cloud Environment](#cloud-environment)
   - [VM Preparing](#vm-preparing)
   - [Repository](#repository)
 - [Project Execution](#project-execution)
   - [Data ingestion](#data-ingestion)
-    - [Docker](#docker)
     - [Prefect](#prefect)
   - [Data Warehouse](#data-warehouse)
   - [Transformation](#transformation)
@@ -29,10 +26,20 @@ Table of Contents
 
 # Problem description and Project Overviews 
 
+For this Project i will use Data about the number  
+and types of applications [HM Land Registry complete each month](https://use-land-property-data.service.gov.uk/datasets/td/download) in 2022.  
+Specifically the "Number and types of applications by **all account customers**".  
+
+These are the Steps for analyzing this Data:  
+1. Create the Local and Cloud Environment, we need to execute this Project.
+2. Download the Data, clean and transform it.
+3. Upload this data to Google Bucket and BigQuery
+4. Use dbt to transform this Data within the BigQuery Data Warehouse
+5. Create Visuals with Metabase based on the transformed Data in the Data Warehouse
 
 # Execution of the Project
 
-This folling parts will explain,   
+This following parts will explain,   
 how you can reproduce this project on your environment.  
 
 
@@ -44,14 +51,14 @@ how you can reproduce this project on your environment.
  
 
 ### Account  
-   Create a Account, [Register here]( https://console.cloud.google.com/)
+Create a Account, [Register here]( https://console.cloud.google.com/)
 
 <br>
 
 ### Project  
-We will create a project with the name "DC-Project-2023" on the [GCloud Site](https://console.cloud.google.com/).  
-On the top left you can click on the name of name  
-of the current project and select "New Project" on the top right.
+We will create a project with the name "dc-project-2023" on the [GCloud Site](https://console.cloud.google.com/).  
+On the top left you can click on the name of the current project  
+and select "New Project" on the top right.  
 
 <br>
 
@@ -75,22 +82,21 @@ Viewer, Storage Admin, Storage Object Admin,  BigQuery Admin
 
 ### Service Account Key
 We need the authorization key for the created service account.  
-In the Mneu "Service Accounts" klick in the list on the name of the account,    
+In the Menu "Service Accounts" click in the list on the name of the account,    
 we created in the previous step. The go to the "KEYS" Tab, "Add Key"    
 "Create new key". Choose Json and save the file.  
 Rename the file to 'service_account_dc_project_2023.json' and    
-save it to your home folder in  `$HOME/.google/`  
+save it to your home folder in  `$HOME/.google/`.  
+Save this file also later, when we create the VM.    
 
 <br>
 
 # Local Environment
 ---
 
-
-
 ### Credentials Env Var  
 We have to set the path to the credentials json file and save it in a variable.  
-export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service-account-authkeys>.json".  
+`export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service-account-authkeys>.json"`.  
 We will save it in the .bashrc file in the home folder.  
 The following command will add `GOOGLE_APPLICATION_CREDENTIALS="$HOME/.google/service_account_dc_project_2023.json"`  
 at the end of the .bashrc file.  
@@ -102,11 +108,10 @@ echo GOOGLE_APPLICATION_CREDENTIALS="$HOME/.google/service_account_dc_project_20
 ### Terraform
 
 
-Terraform is an infrastructure as code tool that lets you build, change,   
+Terraform is a Infrastructure as Code Tool that lets you build, change,   
 and version cloud and on-prem resources safely and efficiently.  
 With the help opf terraform, we will create the create the infrastructure  
-we need on GCP for this project.  
-
+For this Project we need on GCP resources.  
 We will create
    - GC Bucket
    - Big Query Dataset
@@ -115,15 +120,11 @@ First we need to install terraform on our local machine.
 Follow Instruction based on your local operating system.  
 [Terraform install instruction](https://developer.hashicorp.com/terraform/downloads)  
 
-<br>
 
-### GCloud SDK
 We need the Google SDK for authentication when we use terraform  
 https://cloud.google.com/sdk/docs/install-sdk
 
 <br>
-
-### Create GCP Infrastructure
 
 First we need to authorize:
 
@@ -136,21 +137,21 @@ authorization code.
 
 After that we initialize terraform,
 we need to be in the ./week_7_myproject/_1_Prerequisites folder.
-In the folder are the codes for the infratsructure, we want to create.  
+In the folder are the codes for the infrastructure, we want to create.  
 
 ~~~sh
+cd $HOME/data-engineering-zoomcamp/week_7_myproject/_1_Prerequisites/
+
 terraform init
 
 # First we plan and check changes to new infra plan
 terraform plan -var="project=<your-gcp-project-id>"
+# Create new infra
+terraform apply -var="project=<your-gcp-project-id>"
+
 # For our exapmple it is: 
 terraform plan -var="project=dc-project-2023"
-
-# Create new infra
-terraform apply -var="project=<your-gcp-project-id>
-
 terraform apply -var="project=dc-project-2023"
-
 ~~~
 
 
@@ -159,26 +160,24 @@ terraform apply -var="project=dc-project-2023"
 ---
 
 We will execute everything on the cloud environment.  
-We have to prepare the VM. The best OS for this project is Linux.  
+We have to prepare the Virtual Machine. The best OS for this project is **Linux**.  
 
 
 ## VM Preparing
 
-You can find a deatiled Video about setting up the cloud VM [here](https://www.youtube.com/watch?v=ae-CV2KfoN0&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb).  
+You can find a detailed Video about setting up the cloud VM [here](https://www.youtube.com/watch?v=ae-CV2KfoN0&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb).  
 
 This things will be executed:
 
 - Generating SSH keys
 - Creating a virtual machine on GCP
 - Connecting to the VM with SSH
-- Installing Anaconda
+- Installing Python
 - Installing Docker
 - Creating SSH config file
 - Accessing the remote machine with VS Code and SSH remote
 - Installing docker-compose
 - Installing pgcli
-- Port-forwarding with VS code: connecting to pgAdmin and Jupyter from the local computer
-- Installing Terraform
 - Using sftp for putting the credentials to the remote machine
 - Shutting down and removing the instance
 
@@ -186,7 +185,7 @@ This things will be executed:
 
 If you finished all the points in the previous step,  
 the VM is ready to be used.  
-Now you have to clone this repository into your home folder.
+Now you have to clone this repository into your **home folder**.
 
 
 <br>
@@ -195,37 +194,11 @@ Now you have to clone this repository into your home folder.
 
 ## Data ingestion 
 
-### Docker
-
-For Docker we need the host user id.
-When we init docker compose,  
-it will create 3 folders for Airflow.
-If we dont do that, the folders will be created with the root user.  
-This would cause problems.    
-The result must be saved in a .env file.  
-
-~~~shell
-cd $HOME/data-engineering-zoomcamp/week_7_myproject 
-echo -e "AIRFLOW_UID=$(id -u)" >> .env
-echo AIRFLOW_PROJ_DIR="$HOME/data-engineering-zoomcamp/week_7_myproject/docker_data/airflow" >> .env
-~~~
-
-
-We start the docker compose application:  
-
-~~~docker
-cd $HOME/data-engineering-zoomcamp/week_7_myproject 
-
-docker compose up -d
-~~~
-
-The Airflow UI will be avaible on `<ip of the machine>:8080`.  
-Username / Password is `airflow`.  
-
-
-<br>
-
 ### Prefect
+
+We will use Prefect as our orchestration Tool.  
+With the help of Prefect we will execute the Extract, Transform  
+and Load Python Script.  
 
 Open a new terminal and execute:  
 
@@ -235,9 +208,9 @@ prefect orion start
 
 Open the Browser and go to [Prefect UI](http://127.0.0.1:4200)
 
-We need to authorize porefect with our GCP Account.  
-Herefor we will use the service account credentials.  
-Open the Json file Service account file in `$Home/.google/service_account_dc_project_2023.json`  
+We need to authorize Prefect with our GCP Account.  
+Therefor we will use the service account credentials.  
+Open the Json Service account file in `$Home/.google/service_account_dc_project_2023.json`  
 and copy the content of the file.  
 
 Go in the Prefect UI to "Blocks" and create a new block,  
@@ -256,14 +229,14 @@ At "Gcp Credentials" choose the one you created earlier.
 
 Now we can execute the Python ETL Script
 
-Execute the following in a shell:  
+Execute the following code in a shell terminal:  
 
 ~~~shell
 python3 $HOME/data-engineering-zoomcamp/week_7_myproject/_2_Orchestration/extract_load_transfortm_web_to_local_to_gcs_to_bq.py
 ~~~
 
 
-The Script downloads the csv Files form the UK Government Site,  
+The Script downloads the csv Files from the UK Government Site,  
 transform them and uploads them to Google Cloud Bucket and Big Query.  
 
 When you jump back to the Prefect UI,  
@@ -275,11 +248,9 @@ you can see all runs for this Script and detailed Logs.
 ![](images/prefect_flows_detailed.png)
 
 
-
-
 ## Data Warehouse
 
-Teh data we want to analyze is now on Big Query.      
+The data we want to analyze is now on Big Query.      
 As you can see in the details of the table,    
 it is not optimized, no Partition, no Cluster.  
 
@@ -288,7 +259,7 @@ it is not optimized, no Partition, no Cluster.
 We will order the data by date column "date_added",  
 so we will Cluster based on this column.  
 We will group the data by the Customer,  
-so we will Partitio by "Account_Customer".   
+so we will Partition by "Account_Customer".   
 
 
 Execute ths SQL Script to create the new table "land_and_property_optimized".  
@@ -313,7 +284,7 @@ Now we see in the details, that the table is partitioned and clustered.
 
 ## Transformation
 
-The data we want to analyze is ready and opptimized in Big Query.  
+The data we want to analyze is ready and optimized in Big Query.  
 We will now use dbt locally and do some transformations within the Data Warehouse.  
 
 The dbt folder is in `_3_Transformation/dc_project_2023`.
@@ -392,11 +363,11 @@ Open a terminal and execute:
 docker run -d -p 3000:3000 --name metabase metabase/metabase:v0.46.0
 ~~~
 
-The Metbase UI will be avaible on `<ip of the machine>:3000`.  
+The Metabase UI will be available on `<ip of the machine>:3000`.  
 
 Go though the initial Setup of Metabase.  
 In Step 3 "Add your data" choose BigQuery.  
-Fill everything with your data and select the service accout json file  
+Fill everything with your data and select the service account json file  
 from your local machine.  
 
 ![](images/metabase_bigquery_setup.png)
@@ -404,7 +375,7 @@ from your local machine.
 
 Now we can use the data from Big Query in Metabase.  
 We can use Metabase`s SQL Query and execute our own SQL Queries.  
-Than we sabe the result as a visual and add it to a dashboard.  
+Than we have the result as a visual and add it to a dashboard.  
 
 We want to know the Top 10 Number of Applications per Customer.  
 
@@ -417,6 +388,9 @@ GROUP BY customer
 ORDER BY COUNT(*) DESC
 LIMIT 10
 ~~~
+
+3 Customers have more applications than the other 7 together in the Year 2022.  
+
 
 ![](images/Metabase%20Top%2010%20Number%20of%20Applications%20per%20Customer.png)
 
@@ -436,6 +410,11 @@ ORDER BY date_added
 
 ![](images/Metabase%20Number%20of%20Applications%20per%20Month.png)
 
+
+The Peek of the succeeded Application is from February to May 2022.
+
+
+You can added both Visuals to a Dashboard.
 And here you see both Visuals on a Metabase Dashboard:
 
 ![](images/Metabase%20Dashboard.png)
