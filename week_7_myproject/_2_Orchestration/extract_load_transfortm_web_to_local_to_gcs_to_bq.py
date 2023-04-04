@@ -103,7 +103,7 @@ def etl_parent_flow(years:list[int] , months:list[int]) -> None:
 # %%
 if __name__ == '__main__':
     years=[2022]
-    months=[2,3,4]
+    months=list(range(1,13))
     etl_parent_flow(years, months) 
 
 
