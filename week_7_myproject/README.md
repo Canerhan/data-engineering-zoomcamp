@@ -1,8 +1,33 @@
+Table of Contents
+
+- [Problem description and Project Overviews](#problem-description-and-project-overviews)
+- [Execution of the Project](#execution-of-the-project)
+- [Prerequisites](#prerequisites)
+  - [Cloud Account](#cloud-account)
+    - [Account](#account)
+    - [Project](#project)
+    - [APIs](#apis)
+    - [Service Account](#service-account)
+    - [Service Account Key](#service-account-key)
+- [Local Environment](#local-environment)
+    - [Credentials Env Var](#credentials-env-var)
+    - [Terraform](#terraform)
+    - [GCloud SDK](#gcloud-sdk)
+    - [Create GCP Infrastructure](#create-gcp-infrastructure)
+- [Cloud Environment](#cloud-environment)
+  - [VM Preparing](#vm-preparing)
+  - [Repository](#repository)
+- [Project Execution](#project-execution)
+  - [Data ingestion](#data-ingestion)
+    - [Docker](#docker)
+    - [Prefect](#prefect)
+  - [Data Warehouse](#data-warehouse)
+  - [Transformation](#transformation)
+  - [Dashboard](#dashboard)
 
 
 
-
-# Problem description
+# Problem description and Project Overviews 
 
 
 # Execution of the Project
@@ -11,33 +36,33 @@ This folling parts will explain,
 how you can reproduce this project on your environment.  
 
 
-## Prerequisites
+# Prerequisites
 ---
 
-### Cloud Account
+## Cloud Account
 ---
  
 
-#### Account  
+### Account  
    Create a Account, [Register here]( https://console.cloud.google.com/)
 
 <br>
 
-#### Project  
+### Project  
 We will create a project with the name "DC-Project-2023" on the [GCloud Site](https://console.cloud.google.com/).  
 On the top left you can click on the name of name  
 of the current project and select "New Project" on the top right.
 
 <br>
 
-#### APIs  
+### APIs  
 Enabe the following APIs. The Project-Name on the top left must be "DC-Project-2023".   
 * https://console.cloud.google.com/apis/library/iam.googleapis.com
 * https://console.cloud.google.com/apis/library/iamcredentials.googleapis.com
 
 <br>
 
-#### Service Account
+### Service Account
 We will need a account for the communication with our  
 Cloud environment. In GCloud open the menu on the left top.  
 Choose "IAM & Admin". On the menu left select "Service accounts",  
@@ -48,7 +73,7 @@ Viewer, Storage Admin, Storage Object Admin,  BigQuery Admin
 
 <br>
 
-#### Service Account Key
+### Service Account Key
 We need the authorization key for the created service account.  
 In the Mneu "Service Accounts" klick in the list on the name of the account,    
 we created in the previous step. The go to the "KEYS" Tab, "Add Key"    
@@ -58,12 +83,12 @@ save it to your home folder in  `$HOME/.google/`
 
 <br>
 
-## Local Environment
+# Local Environment
 ---
 
 
 
-#### Credentials Env Var  
+### Credentials Env Var  
 We have to set the path to the credentials json file and save it in a variable.  
 export GOOGLE_APPLICATION_CREDENTIALS="<path/to/your/service-account-authkeys>.json".  
 We will save it in the .bashrc file in the home folder.  
@@ -74,7 +99,7 @@ echo GOOGLE_APPLICATION_CREDENTIALS="$HOME/.google/service_account_dc_project_20
 ~~~
 
 
-#### Terraform
+### Terraform
 
 
 Terraform is an infrastructure as code tool that lets you build, change,   
@@ -92,13 +117,13 @@ Follow Instruction based on your local operating system.
 
 <br>
 
-#### GCloud SDK
+### GCloud SDK
 We need the Google SDK for authentication when we use terraform  
 https://cloud.google.com/sdk/docs/install-sdk
 
 <br>
 
-#### Create GCP Infrastructure
+### Create GCP Infrastructure
 
 First we need to authorize:
 
@@ -130,14 +155,14 @@ terraform apply -var="project=dc-project-2023"
 
 
 ---
-## Cloud Environment
+# Cloud Environment
 ---
 
 We will execute everything on the cloud environment.  
 We have to prepare the VM. The best OS for this project is Linux.  
 
 
-### VM Preparing
+## VM Preparing
 
 You can find a deatiled Video about setting up the cloud VM [here](https://www.youtube.com/watch?v=ae-CV2KfoN0&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb).  
 
@@ -157,7 +182,7 @@ This things will be executed:
 - Using sftp for putting the credentials to the remote machine
 - Shutting down and removing the instance
 
-### Repository
+## Repository
 
 If you finished all the points in the previous step,  
 the VM is ready to be used.  
@@ -166,11 +191,11 @@ Now you have to clone this repository into your home folder.
 
 <br>
 
-## Project Execution
+# Project Execution
 
-### Data ingestion 
+## Data ingestion 
 
-#### Docker
+### Docker
 
 For Docker we need the host user id.
 When we init docker compose,  
@@ -200,7 +225,7 @@ Username / Password is `airflow`.
 
 <br>
 
-#### Prefect
+### Prefect
 
 Open a new terminal and execute:  
 
@@ -234,7 +259,7 @@ Now we can execute the Python ETL Script
 Execute the following in a shell:  
 
 ~~~shell
-python3 $HOME/data-engineering-zoomcamp/week_7_myproject/orchestra/extract_load_transfortm_web_to_local_to_gcs_to_bq.py
+python3 $HOME/data-engineering-zoomcamp/week_7_myproject/_2_Orchestration/extract_load_transfortm_web_to_local_to_gcs_to_bq.py
 ~~~
 
 
@@ -252,11 +277,13 @@ you can see all runs for this Script and detailed Logs.
 
 
 
-### Data Warehouse
+## Data Warehouse
 
 Teh data we want to analyze is now on Big Query.      
 As you can see in the details of the table,    
 it is not optimized, no Partition, no Cluster.  
+
+![](images/big_query_data.png)
 
 We will order the data by date column "date_added",  
 so we will Cluster based on this column.  
@@ -268,12 +295,12 @@ Execute ths SQL Script to create the new table "land_and_property_optimized".
 
 ~~~sql
 CREATE TEMP TABLE temp_table AS
-SELECT *,
-  SAFE.PARSE_DATE('%Y-%m-%d', date_added) AS date_added_parsed
+SELECT * EXCEPT(date_added),
+  SAFE.PARSE_DATE('%Y-%m-%d', date_added) AS date_added
 FROM `dc-project-2023.project_dwh.land_and_property`;
 
 CREATE OR REPLACE TABLE `dc-project-2023.project_dwh.land_and_property_optimized`
-PARTITION BY date_added_parsed
+PARTITION BY date_added
 CLUSTER BY Account_Customer 
 AS SELECT * FROM temp_table;
 ~~~
@@ -281,3 +308,134 @@ AS SELECT * FROM temp_table;
 Now we see in the details, that the table is partitioned and clustered.  
 
 ![](images/big_query_table_optimized.png)
+
+
+
+## Transformation
+
+The data we want to analyze is ready and opptimized in Big Query.  
+We will now use dbt locally and do some transformations within the Data Warehouse.  
+
+The dbt folder is in `_3_Transformation/dc_project_2023`.
+
+To create a connection and authorization,  
+we have to create a dbt profile file in `$HOME/.dbt/profiles.yml`  
+The Keyfile is the service account json credentials file in  
+`$HOME/.google/service_account_dc_project_2023.json`  
+
+~~~shell
+my-bigquery-db:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: [GCP project id]
+      dataset: [the name of your dbt dataset]
+      threads: [1 or more]
+      keyfile: [/path/to/bigquery/keyfile.json]
+~~~
+
+For this project, use this one as profiles.yml:  
+
+~~~
+dc_project_2023:
+  outputs:
+    dev:
+      dataset: project_dwh
+      job_execution_timeout_seconds: 300
+      job_retries: 1
+      keyfile: [/path/to/bigquery/keyfile.json]
+      location: US
+      method: service-account
+      priority: interactive
+      project: dc-project-2023
+      threads: 1
+      type: bigquery
+  target: dev
+~~~
+
+You can find the detailed Setup Documentation of dbt Big Query [here](https://docs.getdbt.com/reference/warehouse-setups/bigquery-setup).  
+
+
+open a terminal and switch to the dbt folder
+
+~~~sh
+cd $HOME/data-engineering-zoomcamp/week_7_myproject/_3_Transformation/dc_project_2023
+~~~
+
+We will execute this steps,  
+so it will create the views and tables for us,  
+based on our dbt models.  
+
+~~~sh
+dbt deps
+dbt run
+~~~
+
+After that we have new object in Big Query,  
+based on the models we have defined in the dbt folder.   
+
+
+<br>
+
+## Dashboard
+
+Now we want to visualize the data,  
+we transformed with dbt in the previous step.  
+
+Therefor we will use Metabase locally with Docker.
+
+Open a terminal and execute:
+
+~~~sh
+docker run -d -p 3000:3000 --name metabase metabase/metabase:v0.46.0
+~~~
+
+The Metbase UI will be avaible on `<ip of the machine>:3000`.  
+
+Go though the initial Setup of Metabase.  
+In Step 3 "Add your data" choose BigQuery.  
+Fill everything with your data and select the service accout json file  
+from your local machine.  
+
+![](images/metabase_bigquery_setup.png)
+
+
+Now we can use the data from Big Query in Metabase.  
+We can use Metabase`s SQL Query and execute our own SQL Queries.  
+Than we sabe the result as a visual and add it to a dashboard.  
+
+We want to know the Top 10 Number of Applications per Customer.  
+
+~~~sql
+SELECT
+customer,
+COUNT(*) as number_of_customer_applications
+FROM `dc-project-2023`.project_dwh.final_land_and_property
+GROUP BY customer
+ORDER BY COUNT(*) DESC
+LIMIT 10
+~~~
+
+![](images/Metabase%20Top%2010%20Number%20of%20Applications%20per%20Customer.png)
+
+
+
+
+Number of Applications per Month
+
+~~~sql
+SELECT
+DATE_TRUNC(date_added, MONTH),
+COUNT(*) as number_of_applications
+FROM `dc-project-2023`.project_dwh.final_land_and_property
+GROUP BY date_added
+ORDER BY date_added
+~~~
+
+![](images/Metabase%20Number%20of%20Applications%20per%20Month.png)
+
+And here you see both Visuals on a Metabase Dashboard:
+
+![](images/Metabase%20Dashboard.png)
