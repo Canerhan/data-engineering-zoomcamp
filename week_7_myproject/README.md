@@ -17,6 +17,7 @@ Table of Contents
   - [Repository](#repository)
 - [Project Execution](#project-execution)
   - [Data ingestion](#data-ingestion)
+    - [Python](#python)
     - [Prefect](#prefect)
   - [Data Warehouse](#data-warehouse)
   - [Transformation](#transformation)
@@ -30,7 +31,7 @@ For this Project i will use Data about the number
 and types of applications [HM Land Registry complete each month](https://use-land-property-data.service.gov.uk/datasets/td/download) in 2022.  
 Specifically the "Number and types of applications by **all account customers**".  
 
-These are the Steps for analyzing this Data:  
+These are the Steps for Executing this Project and analyzing the Data:  
 1. Create the Local and Cloud Environment, we need to execute this Project.
 2. Download the Data, clean and transform it.
 3. Upload this data to Google Bucket and BigQuery
@@ -170,29 +171,68 @@ You can find a detailed Video about setting up the cloud VM [here](https://www.y
 This things will be executed:
 
 - Generating SSH keys
+  - Follow the Instruction on the [GCP Doc Site](https://cloud.google.com/compute/docs/connect/create-ssh-keys) based on your OS System.
 - Creating a virtual machine on GCP
-- Connecting to the VM with SSH
+  - Go to your _GCP Project_ -> Open the Menu and choose _Compute Engine_ -> _VM Instances_
+  - _Create Instance_ and select the Settings of the VM based on your personal needs.
+- Connecting to the VM with SSH or use Visualstudio Code Remote SSH
 - Installing Python
-- Installing Docker
-- Creating SSH config file
-- Accessing the remote machine with VS Code and SSH remote
-- Installing docker-compose
-- Installing pgcli
-- Using sftp for putting the credentials to the remote machine
-- Shutting down and removing the instance
+- Installing [Docker](https://docs.docker.com/engine/install/)
+  - Based on your OS System install Docker
+  - For Ubuntu you have to execute this steps in a Terminal:  
+  ~~~shell
+  sudo apt-get update
+  sudo apt-get install \
+  ca-certificates \
+  curl \
+  gnupg
+  sudo mkdir -m 0755 -p /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  sudo apt-get update
+  sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  sudo groupadd docker
+  sudo usermod -aG docker $USER
+  ~~~
+
 
 ## Repository
 
 If you finished all the points in the previous step,  
-the VM is ready to be used.  
-Now you have to clone this repository into your **home folder**.
+then the VM is ready to be used.  
+Connecto to the VM for example with Visual Studio Code Remote SSH.  
+Clone this repository into your **home folder**.
 
+~~~shell
+cd $HOME
+git clone https://github.com/Canerhan/data-engineering-zoomcamp.git
+~~~
 
 <br>
 
 # Project Execution
 
 ## Data ingestion 
+
+<br>
+
+### Python 
+
+We will execute Python Scripts.  
+Therefor we will create a virtual Python Enviornment "py_venv"   
+and install all the Python Package Dependies ("requirements.txt").    
+We will do this in the __week_7_myproject__ Folder.   
+
+~~~shell
+cd $HOME/data-engineering-zoomcamp/week_7_myproject
+python3 -m venv py_venv
+source $HOME/data-engineering-zoomcamp/week_7_myproject/py_venv/bin/activate
+pip install -r requirements.txt
+~~~
+
+For prefect and dbt we will use Python.  
+Use always the same Python env, we created above.  
+
+<br>
 
 ### Prefect
 
@@ -203,6 +243,7 @@ and Load Python Script.
 Open a new terminal and execute:  
 
 ~~~shell
+source $HOME/data-engineering-zoomcamp/week_7_myproject/py_venv/bin/activate
 prefect orion start
 ~~~
 
@@ -232,6 +273,7 @@ Now we can execute the Python ETL Script
 Execute the following code in a shell terminal:  
 
 ~~~shell
+source $HOME/data-engineering-zoomcamp/week_7_myproject/py_venv/bin/activate
 python3 $HOME/data-engineering-zoomcamp/week_7_myproject/_2_Orchestration/extract_load_transfortm_web_to_local_to_gcs_to_bq.py
 ~~~
 
@@ -289,9 +331,16 @@ We will now use dbt locally and do some transformations within the Data Warehous
 
 The dbt folder is in `./week_7_myproject/_3_Transformation/dc_project_2023`.
 
+The Lineage of this dbt project is this:  
+First we have an landing area _**raw**_, than the _**Transform**_ Layer,  
+and than the _**Core**_ Layer, were we will use `final_land_and_property` Table in Metabase.  
+
+![](images/dbt_lineage.png)
+
+
 To create a connection and authorization,  
 we have to create a dbt profile file in `$HOME/.dbt/profiles.yml`  
-The Keyfile is the service account json credentials file in  
+The Keyfile is the Path to the service account json credentials file in  
 `$HOME/.google/service_account_dc_project_2023.json`  
 
 ~~~shell
@@ -307,7 +356,8 @@ my-bigquery-db:
       keyfile: [/path/to/bigquery/keyfile.json]
 ~~~
 
-For this project, use this one as profiles.yml:  
+For this project, i use this one as profiles.yml,    
+edit the keyfile path:  
 
 ~~~
 dc_project_2023:
@@ -329,22 +379,23 @@ dc_project_2023:
 You can find the detailed Setup Documentation of dbt Big Query [here](https://docs.getdbt.com/reference/warehouse-setups/bigquery-setup).  
 
 
-open a terminal and switch to the dbt folder
-
-~~~sh
-cd $HOME/data-engineering-zoomcamp/week_7_myproject/_3_Transformation/dc_project_2023
-~~~
-
+Open a terminal and switch to the dbt folder
 We will execute this steps,  
 so it will create the views and tables for us,  
 based on our dbt models.  
-
 ~~~sh
+source $HOME/data-engineering-zoomcamp/week_7_myproject/py_venv/bin/activate
+cd $HOME/data-engineering-zoomcamp/week_7_myproject/_3_Transformation/dc_project_2023
 dbt deps
 dbt run
 ~~~
 
-After that we have new object in Big Query,  
+The successful result in the termninal looks like this:  
+
+![](images/dbt_log.png)
+
+
+After the process we have new objects in Big Query,  
 based on the models we have defined in the dbt folder.   
 
 
