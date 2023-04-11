@@ -3,8 +3,6 @@
 The goal of this project is to apply everything we learned
 in this course and build an end-to-end data pipeline.
 
-Remember that to pass the project, you must evaluate 3 peers. If you don't do that, your project can't be considered complete.
-
 You will have two attempts to submit your project. If you don't have 
 time to submit your project by the end of attempt #1 (you started the 
 course late, you have vacation plans, life/work got in the way, etc.)
@@ -14,6 +12,14 @@ then you will have a second chance to submit your project as attempt
 
 There are only two attempts.
 
+Remember that to pass the project, you must evaluate 3 peers. If you don't do that,
+your project can't be considered complete.
+
+To find the projects assigned to you, use the peer review assignments link 
+and find your hash in the first column. You will see three rows: you need to evaluate 
+each of these projects. For each project, you need to submit the form once,
+so in total, you will make three submissions. 
+
 
 ### Submitting
 
@@ -22,13 +28,13 @@ There are only two attempts.
 Project:
 
 * Form: https://forms.gle/zTJiVYSmCgsENj6y8
-* Deadline: 6 April, 22:00 CET
+* Deadline: 10 April, 22:00 CET
 
 Peer reviewing:
 
-* Peer review assignments: TBA
-* Form: TBA
-* Deadline: 13 April, 22:00 CET
+* Peer review assignments: [link](https://docs.google.com/spreadsheets/d/e/2PACX-1vRYQ0A9C7AkRK-YPSFhqaRMmuPR97QPfl2PjI8n11l5jntc6YMHIJXVVS0GQNqAYIGwzyevyManDB08/pubhtml?gid=0&single=true)
+* Form: https://forms.gle/1bxmgR8yPwV359zb7
+* Deadline: 17 April, 22:00 CET
 
 Project feedback: TBA
 
@@ -36,7 +42,7 @@ Project feedback: TBA
 
 Project:
 
-* Form: TBA
+* Form: https://forms.gle/gCXUSYBm1KgMKXVm8
 * Deadline: 27 April, 22:00 CET
 
 Peer reviewing:
